@@ -1,6 +1,12 @@
-namespace GridMind.Navigation;
+// src/Navigation/IMovementStrategy.cs
 
-public interface IMovementStrategy
+using GridMind.Agents;
+using GridMind.Environment;
+
+namespace GridMind.Navigation
 {
-    
+    public interface IMovementStrategy
+    {
+        GridCell NextMove(Grid grid, Agent agent);
+    }
 }

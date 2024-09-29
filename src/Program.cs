@@ -1,11 +1,12 @@
 ﻿// src/Program.cs
 using Avalonia;
-using Avalonia.ReactiveUI;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 using GridMind.Environment;
 using GridMind.Agents;
+using GridMind.Navigation;
 using GridMind.UI;
-using Avalonia.Markup.Xaml;
 
 namespace GridMind
 {
@@ -21,9 +22,9 @@ namespace GridMind
         // Configure the Avalonia App
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .LogToTrace()
-                .UseReactiveUI();
+                         .UsePlatformDetect()
+                         .LogToTrace()
+                         .UseReactiveUI();
     }
 
     // Avalonia Application Class
@@ -47,13 +48,27 @@ namespace GridMind
                 var goalCell = grid.GetCell(4, 4);
                 startCell.Type = CellType.Start;
                 goalCell.Type = CellType.Goal;
+
                 grid.GetCell(2, 2).Type = CellType.Obstacle;
                 grid.GetCell(3, 2).Type = CellType.Obstacle;
 
+                // Create the agent and assign a strategy
                 agent = new Agent("Explorer", startCell, goalCell);
+                agent.SetMovementStrategy(new BreadthFirstSearchStrategy());
 
                 // Pass the initialized Grid and Agent to the VisualizerWindow
-                desktop.MainWindow = new VisualizerWindow(grid, agent, () => agent.Explore(grid));
+                desktop.MainWindow = new VisualizerWindow(grid, agent, () => 
+                {
+                    if (agent.Position == goalCell)
+                    {
+                        // Display message and stop further movement
+                        System.Console.WriteLine($"{agent.Name} has reached the goal at ({goalCell.Row}, {goalCell.Column})!");
+                    }
+                    else
+                    {
+                        agent.Move(grid);
+                    }
+                });
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Folder Include="Navigation\" />
-    <Folder Include="src\Navigation\" />
     <Folder Include="src\Systems\" />
     <Folder Include="Systems\" />
     <Folder Include="Tests\" />
