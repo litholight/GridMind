@@ -1,4 +1,5 @@
 ﻿// src/Program.cs
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -12,14 +13,12 @@ namespace GridMind
 {
     class Program
     {
-        // Entry point of the program
         static void Main(string[] args)
         {
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
         }
 
-        // Configure the Avalonia App
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                          .UsePlatformDetect()
@@ -27,7 +26,6 @@ namespace GridMind
                          .UseReactiveUI();
     }
 
-    // Avalonia Application Class
     public class App : Application
     {
         private Grid? grid;
@@ -42,26 +40,62 @@ namespace GridMind
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Set up the Grid and Agent
-                grid = new Grid(5, 5);
-                var startCell = grid.GetCell(0, 0);
-                var goalCell = grid.GetCell(4, 4);
+                // Create a larger grid size
+                int gridRows = 15;
+                int gridColumns = 15;
+                grid = new Grid(gridRows, gridColumns);
+
+                // Create a random number generator
+                var random = new Random();
+
+                // Set up random start and goal cells
+                var startRow = random.Next(0, gridRows);
+                var startCol = random.Next(0, gridColumns);
+                var goalRow = random.Next(0, gridRows);
+                var goalCol = random.Next(0, gridColumns);
+
+                // Ensure start and goal are not the same
+                while (startRow == goalRow && startCol == goalCol)
+                {
+                    goalRow = random.Next(0, gridRows);
+                    goalCol = random.Next(0, gridColumns);
+                }
+
+                // Set the start and goal cells
+                var startCell = grid.GetCell(startRow, startCol);
+                var goalCell = grid.GetCell(goalRow, goalCol);
                 startCell.Type = CellType.Start;
                 goalCell.Type = CellType.Goal;
 
-                grid.GetCell(2, 2).Type = CellType.Obstacle;
-                grid.GetCell(3, 2).Type = CellType.Obstacle;
+                // Randomly place obstacles
+                int numberOfObstacles = 30;  // Adjust the number of obstacles as needed
+                for (int i = 0; i < numberOfObstacles; i++)
+                {
+                    int obstacleRow, obstacleCol;
+                    do
+                    {
+                        obstacleRow = random.Next(0, gridRows);
+                        obstacleCol = random.Next(0, gridColumns);
+                    }
+                    // Ensure obstacles don't overlap with start or goal cells
+                    while ((obstacleRow == startRow && obstacleCol == startCol) || 
+                           (obstacleRow == goalRow && obstacleCol == goalCol) ||
+                           grid.GetCell(obstacleRow, obstacleCol).Type == CellType.Obstacle);
+
+                    // Place obstacle
+                    grid.GetCell(obstacleRow, obstacleCol).Type = CellType.Obstacle;
+                }
 
                 // Create the agent and assign a strategy
                 agent = new Agent("Explorer", startCell, goalCell);
-                agent.SetMovementStrategy(new BreadthFirstSearchStrategy());
+                agent.SetMovementStrategy(new RandomWalkStrategy());
 
                 // Pass the initialized Grid and Agent to the VisualizerWindow
-                desktop.MainWindow = new VisualizerWindow(grid, agent, () => 
+                desktop.MainWindow = new VisualizerWindow(grid, agent, () =>
                 {
                     if (agent.Position == goalCell)
                     {
-                        System.Console.WriteLine($"{agent.Name} has reached the goal!");
+                        System.Console.WriteLine($"{agent.Name} has reached the goal at ({goalCell.Row}, {goalCell.Column})!");
                     }
                     else
                     {
