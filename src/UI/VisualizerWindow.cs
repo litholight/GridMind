@@ -1,56 +1,64 @@
-// src/UI/VisualizerWindow.cs
-using Avalonia;
+// src/UI/VisualizerWindow.axaml.cs
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using GridMind.Environment;
 using System;
 using System.Threading.Tasks;
+using GridMind.Environment;
+using GridMind.Agents;
 
 namespace GridMind.UI
 {
     public partial class VisualizerWindow : Window
     {
-        private Environment.Grid? grid;
-        private Agents.Agent? agent;
+        private readonly Environment.Grid grid;
+        private readonly Agent agent;
         private Action onNextMove;
-        private Button stepButton;
-        private Button playButton;
         private bool isPlaying;
+        private GridVisualizer? visualizerControl;
 
-        public VisualizerWindow(Environment.Grid grid, Agents.Agent agent, Action onNextMove)
+        public VisualizerWindow(Environment.Grid grid, Agent agent, Action onNextMove)
         {
-            this.grid = grid ?? throw new ArgumentNullException(nameof(grid));
-            this.agent = agent ?? throw new ArgumentNullException(nameof(agent));
-            this.onNextMove = onNextMove ?? throw new ArgumentNullException(nameof(onNextMove));
+            this.grid = grid;
+            this.agent = agent;
+            this.onNextMove = onNextMove;
 
             InitializeComponent();
 
-            // Safely find and assign controls
-            stepButton = this.FindControl<Button>("StepButton") ?? throw new NullReferenceException("StepButton not found");
-            playButton = this.FindControl<Button>("PlayButton") ?? throw new NullReferenceException("PlayButton not found");
+            // Find controls defined in the XAML layout
+            visualizerControl = this.FindControl<GridVisualizer>("GridVisualizerControl");
+            StepButton = this.FindControl<Button>("StepButton");
+            PlayButton = this.FindControl<Button>("PlayButton");
+            StatusLabel = this.FindControl<TextBlock>("StatusLabel");
 
-            stepButton.Click += async (_, __) => StepThrough();
-            playButton.Click += (_, __) => TogglePlay();
+            // Attach event handlers to the buttons
+            StepButton.Click += async (_, __) => await StepThroughAsync();
+            PlayButton.Click += (_, __) => TogglePlay();
+
+            // Initialize the GridVisualizer control with the grid and agent
+            visualizerControl = new GridVisualizer(grid, agent);
+            this.FindControl<Avalonia.Controls.Grid>("MainGridContainer").Children.Add(visualizerControl);
         }
 
-        private void InitializeComponent()
+        private async Task StepThroughAsync()
         {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        private void StepThrough()
-        {
-            onNextMove.Invoke();  // Trigger the next move in the program
-            RenderGrid();
+            onNextMove.Invoke();
+            visualizerControl?.UpdateAgentPosition();
+            if (agent.Position == agent.Goal)
+            {
+                StatusLabel.Text = "Agent has reached the goal!";
+            }
         }
 
         private async Task PlayFramesAsync()
         {
             isPlaying = true;
-            while (isPlaying)
+            while (isPlaying && agent.Position != agent.Goal)
             {
-                StepThrough();
+                await StepThroughAsync();
                 await Task.Delay(500);  // Adjust delay for slower/faster playback
+            }
+            if (agent.Position == agent.Goal)
+            {
+                StatusLabel.Text = "Agent has reached the goal!";
             }
         }
 
@@ -59,50 +67,13 @@ namespace GridMind.UI
             if (isPlaying)
             {
                 isPlaying = false;  // Stop the playback
-                playButton.Content = "Play";
+                PlayButton.Content = "Play";
             }
             else
             {
-                playButton.Content = "Pause";
+                PlayButton.Content = "Pause";
                 _ = PlayFramesAsync();
             }
-        }
-
-        // Render the current state of the grid
-        private void RenderGrid()
-        {
-            Console.Clear();
-            for (int row = 0; row < grid.Rows; row++)
-            {
-                for (int col = 0; col < grid.Columns; col++)
-                {
-                    if (agent.Position.Row == row && agent.Position.Column == col)
-                    {
-                        Console.Write("A ");
-                    }
-                    else
-                    {
-                        var cell = grid.GetCell(row, col);
-                        switch (cell.Type)
-                        {
-                            case CellType.Start:
-                                Console.Write("S ");
-                                break;
-                            case CellType.Goal:
-                                Console.Write("G ");
-                                break;
-                            case CellType.Obstacle:
-                                Console.Write("X ");
-                                break;
-                            default:
-                                Console.Write(". ");
-                                break;
-                        }
-                    }
-                }
-                Console.WriteLine();
-            }
-            Console.WriteLine();  // Add some spacing
         }
     }
 }

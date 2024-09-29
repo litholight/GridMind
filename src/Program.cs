@@ -61,8 +61,7 @@ namespace GridMind
                 {
                     if (agent.Position == goalCell)
                     {
-                        // Display message and stop further movement
-                        System.Console.WriteLine($"{agent.Name} has reached the goal at ({goalCell.Row}, {goalCell.Column})!");
+                        System.Console.WriteLine($"{agent.Name} has reached the goal!");
                     }
                     else
                     {
