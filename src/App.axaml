@@ -1,0 +1,9 @@
+<!-- src/App.axaml -->
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GridMind.App">
+    <Application.Styles>
+        <!-- Correct path to the Fluent theme for Avalonia 11+ -->
+        <StyleInclude Source="avares://Avalonia.Themes.Fluent/FluentTheme.xaml"/>
+    </Application.Styles>
+</Application>

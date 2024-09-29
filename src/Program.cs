@@ -1,41 +1,62 @@
 ﻿// src/Program.cs
-using System;
+using Avalonia;
+using Avalonia.ReactiveUI;
+using Avalonia.Controls.ApplicationLifetimes;
 using GridMind.Environment;
 using GridMind.Agents;
+using GridMind.UI;
+using Avalonia.Markup.Xaml;
 
 namespace GridMind
 {
     class Program
     {
+        // Entry point of the program
         static void Main(string[] args)
         {
-            // Create a 5x5 grid
-            Grid grid = new Grid(5, 5);
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
 
-            // Set up start and goal positions
-            GridCell startCell = grid.GetCell(0, 0);
-            GridCell goalCell = grid.GetCell(4, 4);
-            
-            startCell.Type = CellType.Start;
-            goalCell.Type = CellType.Goal;
+        // Configure the Avalonia App
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .LogToTrace()
+                .UseReactiveUI();
+    }
 
-            // Place some obstacles
-            grid.GetCell(2, 2).Type = CellType.Obstacle;
-            grid.GetCell(3, 2).Type = CellType.Obstacle;
+    // Avalonia Application Class
+    public class App : Application
+    {
+        private Grid? grid;
+        private Agent? agent;
 
-            // Create an agent and assign the goal position
-            Agent agent = new Agent("Explorer", startCell, goalCell);
+        public override void Initialize()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
-            // Print the initial grid
-            Console.WriteLine("Initial Grid:");
-            GridMind.Utilities.GridVisualizer.PrintGrid(grid, agent);
-
-            // Let the agent explore a few moves
-            for (int i = 0; i < 10; i++)
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                agent.Explore(grid);
-                System.Threading.Thread.Sleep(500);  // Pause briefly to simulate real-time movement
+                // Set up the Grid and Agent
+                grid = new Grid(5, 5);
+                var startCell = grid.GetCell(0, 0);
+                var goalCell = grid.GetCell(4, 4);
+                startCell.Type = CellType.Start;
+                goalCell.Type = CellType.Goal;
+                grid.GetCell(2, 2).Type = CellType.Obstacle;
+                grid.GetCell(3, 2).Type = CellType.Obstacle;
+
+                agent = new Agent("Explorer", startCell, goalCell);
+
+                // Pass the initialized Grid and Agent to the VisualizerWindow
+                desktop.MainWindow = new VisualizerWindow(grid, agent, () => agent.Explore(grid));
             }
+
+            base.OnFrameworkInitializationCompleted();
         }
     }
 }

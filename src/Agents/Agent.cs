@@ -9,7 +9,7 @@ namespace GridMind.Agents
         public string Name { get; }
         public GridCell Position { get; set; }
         
-        public GridCell Goal { get; set; }  // The agent's goal position
+        public GridCell? Goal { get; set; }  // The agent's goal position
 
         // Available movement directions (no diagonals)
         private static readonly MovementDirection[] Directions = 
@@ -20,7 +20,7 @@ namespace GridMind.Agents
             MovementDirection.Right 
         };
 
-        public Agent(string name, GridCell startPosition, GridCell goal = null)
+        public Agent(string name, GridCell startPosition, GridCell? goal = null)
         {
             Name = name;
             Position = startPosition;
