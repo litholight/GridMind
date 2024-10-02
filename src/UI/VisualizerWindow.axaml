@@ -1,20 +1,26 @@
 <!-- src/UI/VisualizerWindow.axaml -->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:GridMind.UI"
         x:Class="GridMind.UI.VisualizerWindow"
         Title="GridMind Visualizer"
-        Width="800" Height="800">
-    <StackPanel>
-        <TextBlock Text="GridMind Visualizer" HorizontalAlignment="Center" FontSize="20" Margin="10"/>
-        <!-- Container for the visualizer control -->
-        <Grid Name="MainGridContainer" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
-            <local:GridVisualizer Name="GridVisualizerControl"/>
-        </Grid>
-        <!-- Step and Play buttons -->
-        <Button Name="StepButton" Content="Step" HorizontalAlignment="Center" Width="100"/>
-        <Button Name="PlayButton" Content="Play" HorizontalAlignment="Center" Width="100" Margin="10"/>
-        <!-- Status label -->
-        <TextBlock Name="StatusLabel" Text="Agent Status: " HorizontalAlignment="Center" FontSize="14" Margin="10"/>
-    </StackPanel>
+        Width="800" Height="800"
+        Focusable="True">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+			<Button Name="StepButton" Content="Step" Width="100" Margin="5"/>
+			<Button Name="PlayButton" Content="Play" Width="100" Margin="5"/>
+			<Button Name="ControlToggleButton" Content="Switch to Human Control" Width="200" Margin="5"/>
+			<TextBlock Name="StatusLabel" Text="Agent Status" Margin="10"/>
+		</StackPanel>
+
+		<Grid Name="MainGridContainer" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+			<!-- GridVisualizer Control will be dynamically added here in the VisualizerWindow constructor -->
+		</Grid>
+	</Grid>
 </Window>

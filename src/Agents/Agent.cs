@@ -1,20 +1,34 @@
 // src/Agents/Agent.cs
 using System.Collections.Generic;
+using System.ComponentModel;
 using GridMind.Environment;
 using GridMind.Navigation;
 
 namespace GridMind.Agents
 {
-    public class Agent
+    public class Agent : INotifyPropertyChanged
     {
         public string Name { get; }
-        public GridCell Position { get; set; }
         public GridCell? Goal { get; set; }
         public FogOfWar FogOfWar { get; }
         private IMovementStrategy movementStrategy;
 
         // New property to track explored cells
         public HashSet<GridCell> ExploredCells { get; }
+
+        private GridCell position;
+        public GridCell Position
+        {
+            get => position;
+            set
+            {
+                if (position != value)
+                {
+                    position = value;
+                    OnPropertyChanged(nameof(Position));
+                }
+            }
+        }
 
         public Agent(string name, GridCell startPosition, GridCell? goal = null)
         {
@@ -25,7 +39,7 @@ namespace GridMind.Agents
 
             // Initialize ExploredCells with the starting position
             ExploredCells = new HashSet<GridCell> { startPosition };
-            
+
             // Initialize FogOfWar
             FogOfWar = new FogOfWar();
             FogOfWar.CellExplored(startPosition);
@@ -80,6 +94,13 @@ namespace GridMind.Agents
                 }
             }
             return visibleCells;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
