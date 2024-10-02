@@ -5,23 +5,23 @@ The following overview outlines the stages and adaptations necessary to transfor
 ---
 
 ## Stage 1: Implement Limited Knowledge and Local Perception
-**Goal**: Change the agent’s strategy to operate with only local knowledge, enabling it to “see” only cells within a specified radius. Maintain a fog of war for cells outside this radius.
+**Goal**: Change the agent�s strategy to operate with only local knowledge, enabling it to �see� only cells within a specified radius. Maintain a fog of war for cells outside this radius.
 
 ### Implementation Steps
 1. **Agent Perception**:
-    - Modify the `Agent` class to include a `GetVisibleCells()` method that returns the visible cells based on its position and visibility radius.
-    - Introduce a `FogOfWar` component in the `Grid` to track unexplored areas.
+   - Modify the `Agent` class to include a `GetVisibleCells()` method that returns the visible cells based on its position and visibility radius.
+   - Introduce a `FogOfWar` component in the `Grid` to track unexplored areas.
 
 2. **Fog of War in Visualization**:
-    - Modify `GridVisualizer` to display fogged areas and show cells as “unknown” until the agent has moved close enough to see them.
-    - Keep track of explored cells using an `ExploredCells` property in the `Agent` class.
+   - Modify `GridVisualizer` to display fogged areas and show cells as �unknown� until the agent has moved close enough to see them.
+   - Keep track of explored cells using an `ExploredCells` property in the `Agent` class.
 
 3. **Update Movement Strategies**:
-    - Update existing strategies (`BreadthFirstSearchStrategy`, `RandomWalkStrategy`) to use the limited knowledge and only plan paths based on visible cells.
+   - Update existing strategies (`BreadthFirstSearchStrategy`, `RandomWalkStrategy`) to use the limited knowledge and only plan paths based on visible cells.
 
 ### Advanced C# Techniques for This Stage
 1. **Extension Methods for Perception**:
-    - Implement extension methods for `GridCell` to support visibility calculations (`IsWithinRadius`).
+   - Implement extension methods for `GridCell` to support visibility calculations (`IsWithinRadius`).
 
    ```csharp
    public static class GridExtensions
@@ -36,8 +36,8 @@ The following overview outlines the stages and adaptations necessary to transfor
    ```
 
 2. **Use of `HashSet` and LINQ**:
-    - Store and access explored cells efficiently using `HashSet<GridCell>`.
-    - Use LINQ for querying visible cells:
+   - Store and access explored cells efficiently using `HashSet<GridCell>`.
+   - Use LINQ for querying visible cells:
 
    ```csharp
    var visibleCells = grid.Cells
@@ -46,7 +46,7 @@ The following overview outlines the stages and adaptations necessary to transfor
    ```
 
 3. **Observer Pattern for Fog of War**:
-    - Use the Observer Pattern to update the `GridVisualizer` whenever the `ExploredCells` set changes.
+   - Use the Observer Pattern to update the `GridVisualizer` whenever the `ExploredCells` set changes.
 
    ```csharp
    public class FogOfWar : IObservable<GridCell>
@@ -74,20 +74,20 @@ The following overview outlines the stages and adaptations necessary to transfor
 
 ### Implementation Steps
 1. **Create a Human Player Controller**:
-    - Implement a new class `HumanController` that allows the user to take control of the agent’s movement.
-    - Use keyboard or mouse inputs in the `VisualizerWindow` to set the movement direction.
+   - Implement a new class `HumanController` that allows the user to take control of the agent�s movement.
+   - Use keyboard or mouse inputs in the `VisualizerWindow` to set the movement direction.
 
 2. **Integrate Human Control in the UI**:
-    - Modify the `VisualizerWindow` to allow for keybindings that update the direction in `HumanController`.
-    - Display the agent’s visible cells, obstacles, and fog of war in the UI.
+   - Modify the `VisualizerWindow` to allow for keybindings that update the direction in `HumanController`.
+   - Display the agent�s visible cells, obstacles, and fog of war in the UI.
 
 3. **Switch Between AI and Human Control**:
-    - Implement a way to dynamically switch between human and AI control using a menu option or a keybinding.
+   - Implement a way to dynamically switch between human and AI control using a menu option or a keybinding.
 
 ### Advanced C# Techniques for This Stage
 1. **Command Pattern for Input Handling**:
-    - Use the Command Pattern to encapsulate human input (e.g., movement directions) into reusable commands.
-    - This allows for future features like undo/redo or macros.
+   - Use the Command Pattern to encapsulate human input (e.g., movement directions) into reusable commands.
+   - This allows for future features like undo/redo or macros.
 
    ```csharp
    public class MoveCommand : ICommand
@@ -114,7 +114,7 @@ The following overview outlines the stages and adaptations necessary to transfor
    ```
 
 2. **Reactive Programming for UI Updates**:
-    - Use `ReactiveUI` patterns to dynamically update the grid based on human actions.
+   - Use `ReactiveUI` patterns to dynamically update the grid based on human actions.
 
    ```csharp
    this.WhenAnyValue(x => x.agent.Position)
@@ -122,7 +122,7 @@ The following overview outlines the stages and adaptations necessary to transfor
    ```
 
 3. **Event-Driven Programming**:
-    - Use C# events to trigger visual updates and state changes when the human changes direction or switches control modes.
+   - Use C# events to trigger visual updates and state changes when the human changes direction or switches control modes.
 
    ```csharp
    public event EventHandler<DirectionChangedEventArgs> DirectionChanged;
@@ -135,21 +135,21 @@ The following overview outlines the stages and adaptations necessary to transfor
 
 ### Implementation Steps
 1. **Define Performance Metrics**:
-    - Track metrics such as:
-        - Number of steps taken.
-        - Cells explored.
-        - Repeated cell visits.
-        - Time to goal.
+   - Track metrics such as:
+     - Number of steps taken.
+     - Cells explored.
+     - Repeated cell visits.
+     - Time to goal.
 
 2. **Create a Performance Tracking Class**:
-    - Implement a `PerformanceTracker` class that records these metrics for each agent and human session.
+   - Implement a `PerformanceTracker` class that records these metrics for each agent and human session.
 
 3. **Display Performance in the UI**:
-    - Create a performance dashboard in the `VisualizerWindow` to show real-time metrics.
+   - Create a performance dashboard in the `VisualizerWindow` to show real-time metrics.
 
 ### Advanced C# Techniques for This Stage
 1. **Observer Pattern for Performance Tracking**:
-    - Use the Observer Pattern to notify the UI whenever a performance metric changes.
+   - Use the Observer Pattern to notify the UI whenever a performance metric changes.
 
    ```csharp
    public class PerformanceTracker : IObservable<PerformanceMetrics>
@@ -171,27 +171,27 @@ The following overview outlines the stages and adaptations necessary to transfor
    ```
 
 2. **Dependency Injection**:
-    - Use Dependency Injection to inject `PerformanceTracker` into different components (`Agent`, `HumanController`, etc.).
+   - Use Dependency Injection to inject `PerformanceTracker` into different components (`Agent`, `HumanController`, etc.).
 
 ---
 
 ## Stage 4: Dynamically Increase Challenge
-**Goal**: Adapt the environment to increase the challenge for both human and agent when the agent’s performance matches or exceeds the human’s.
+**Goal**: Adapt the environment to increase the challenge for both human and agent when the agent�s performance matches or exceeds the human�s.
 
 ### Implementation Steps
 1. **Introduce Dynamic Obstacles**:
-    - Make some obstacles move or disappear/reappear based on time or conditions.
-    - Implement obstacle movement using `Task` or `async` patterns.
+   - Make some obstacles move or disappear/reappear based on time or conditions.
+   - Implement obstacle movement using `Task` or `async` patterns.
 
 2. **Randomize Goal Position**:
-    - Periodically move the goal to a new location, requiring the agent to adapt.
+   - Periodically move the goal to a new location, requiring the agent to adapt.
 
 3. **Change Grid Size and Shape**:
-    - Alter the grid dimensions (e.g., maze-like environments) to force both human and agent to adapt.
+   - Alter the grid dimensions (e.g., maze-like environments) to force both human and agent to adapt.
 
 ### Advanced C# Techniques for This Stage
 1. **Async and Multithreading**:
-    - Use `Task` and `async/await` for dynamic updates to the environment.
+   - Use `Task` and `async/await` for dynamic updates to the environment.
 
    ```csharp
    public async Task MoveObstaclesPeriodically(Grid grid)
@@ -205,10 +205,10 @@ The following overview outlines the stages and adaptations necessary to transfor
    ```
 
 2. **Behavioral Design Patterns**:
-    - Use the **State Pattern** to control different phases of difficulty (e.g., `EasyState`, `MediumState`, `HardState`).
+   - Use the **State Pattern** to control different phases of difficulty (e.g., `EasyState`, `MediumState`, `HardState`).
 
 3. **Spatial Partitioning and Optimization**:
-    - Use spatial partitioning techniques like Quadtrees to efficiently handle dynamic obstacles and large environments.
+   - Use spatial partitioning techniques like Quadtrees to efficiently handle dynamic obstacles and large environments.
 
 ---
 
@@ -217,18 +217,18 @@ The following overview outlines the stages and adaptations necessary to transfor
 
 ### Implementation Steps
 1. **Implement Imitation Learning**:
-    - Allow the agent to observe human movements and create a behavior model.
+   - Allow the agent to observe human movements and create a behavior model.
 
 2. **Reinforcement Learning**:
-    - Implement reward-based learning algorithms to optimize the agent’s strategies.
+   - Implement reward-based learning algorithms to optimize the agent�s strategies.
 
 ### Advanced C# Techniques for This Stage
 1. **Machine Learning Integration**:
-    - Consider integrating C# machine learning libraries like `ML.NET` for more advanced learning behaviors.
+   - Consider integrating C# machine learning libraries like `ML.NET` for more advanced learning behaviors.
 
 2. **Strategy Pattern for Dynamic Learning**:
-    - Use the Strategy Pattern to swap between different learning algorithms dynamically.
+   - Use the Strategy Pattern to swap between different learning algorithms dynamically.
 
 ---
 
-This guide should serve as a detailed roadmap for implementing each stage, with advanced C# techniques appropriately integrated to maintain code quality, extensibility, and performance. Let me know where you’d like to start or if you have further questions about any specific technique or stage!
+This guide should serve as a detailed roadmap for implementing each stage, with advanced C# techniques appropriately integrated to maintain code quality, extensibility, and performance. Let me know where you�d like to start or if you have further questions about any specific technique or stage!
