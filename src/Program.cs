@@ -88,7 +88,7 @@ namespace GridMind
 
                 // Create the agent and assign a strategy
                 agent = new Agent("Explorer", startCell, goalCell);
-                agent.SetMovementStrategy(new RandomWalkStrategy());
+                agent.SetMovementStrategy(new BreadthFirstSearchStrategy());
 
                 // Pass the initialized Grid and Agent to the VisualizerWindow
                 desktop.MainWindow = new VisualizerWindow(grid, agent, () =>

@@ -1,5 +1,6 @@
 // src/Navigation/BreadthFirstSearchStrategy.cs
 using System.Collections.Generic;
+using System.Linq;
 using GridMind.Environment;
 using GridMind.Agents;
 using GridMind.Utilities;
@@ -10,6 +11,8 @@ namespace GridMind.Navigation
     {
         public GridCell NextMove(Grid grid, Agent agent)
         {
+            var exploredCells = agent.ExploredCells;
+
             var visited = new HashSet<GridCell>();
             var queue = new Queue<(GridCell Cell, GridCell? Parent)>();
             var parentMap = new Dictionary<GridCell, GridCell>();
@@ -31,7 +34,7 @@ namespace GridMind.Navigation
                     return current;
                 }
 
-                foreach (var neighbor in GetNeighbors(grid, current))
+                foreach (var neighbor in GetNeighbors(grid, current, exploredCells))
                 {
                     if (!visited.Contains(neighbor))
                     {
@@ -46,7 +49,7 @@ namespace GridMind.Navigation
             return agent.Position;
         }
 
-        private IEnumerable<GridCell> GetNeighbors(Grid grid, GridCell cell)
+        private IEnumerable<GridCell> GetNeighbors(Grid grid, GridCell cell, HashSet<GridCell> exploredCells)
         {
             var neighbors = new List<GridCell>();
             var directions = new MovementDirection[]
@@ -65,7 +68,7 @@ namespace GridMind.Navigation
                 if (newRow >= 0 && newRow < grid.Rows && newCol >= 0 && newCol < grid.Columns)
                 {
                     var neighbor = grid.GetCell(newRow, newCol);
-                    if (neighbor.Type != CellType.Obstacle)
+                    if (neighbor.Type != CellType.Obstacle && exploredCells.Contains(neighbor))
                         neighbors.Add(neighbor);
                 }
             }
