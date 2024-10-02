@@ -2,7 +2,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="GridMind.UI.GridVisualizer">
-    <Grid Name="MainGrid">
-        <!-- This Grid will dynamically update based on the agent's movements -->
-    </Grid>
+	<Grid Name="MainGrid"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center">
+		<!-- The grid cells will be dynamically added here -->
+	</Grid>
 </UserControl>

@@ -78,7 +78,7 @@ namespace GridMind
                         obstacleCol = random.Next(0, gridColumns);
                     }
                     // Ensure obstacles don't overlap with start or goal cells
-                    while ((obstacleRow == startRow && obstacleCol == startCol) || 
+                    while ((obstacleRow == startRow && obstacleCol == startCol) ||
                            (obstacleRow == goalRow && obstacleCol == goalCol) ||
                            grid.GetCell(obstacleRow, obstacleCol).Type == CellType.Obstacle);
 
@@ -88,7 +88,7 @@ namespace GridMind
 
                 // Create the agent and assign a strategy
                 agent = new Agent("Explorer", startCell, goalCell);
-                agent.SetMovementStrategy(new BreadthFirstSearchStrategy());
+                agent.SetMovementStrategy(new RandomWalkStrategy());
 
                 // Pass the initialized Grid and Agent to the VisualizerWindow
                 desktop.MainWindow = new VisualizerWindow(grid, agent, () =>

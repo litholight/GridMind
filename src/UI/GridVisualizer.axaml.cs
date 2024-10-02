@@ -3,8 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using GridMind.Environment;
 using GridMind.Agents;
-using GridMind.Utilities; // For the extension methods
-using System.Linq;
 
 namespace GridMind.UI
 {
@@ -12,7 +10,7 @@ namespace GridMind.UI
     {
         private readonly Environment.Grid grid;
         private readonly Agent agent;
-        private readonly int visibilityRadius = 1; // You can adjust this as needed
+        private const int CellSize = 30;  // Uniform cell size (adjust as needed)
 
         public GridVisualizer()
         {
@@ -23,31 +21,21 @@ namespace GridMind.UI
         {
             this.grid = grid;
             this.agent = agent;
-            
+
+            // Subscribe to the agent's FogOfWar
             agent.FogOfWar.Subscribe(this);
-            
+
             RenderGrid();
         }
-        
-        // Implement IObserver<GridCell>
-        public void OnCompleted()
-        {
-            // Not used
-        }
 
-        public void OnError(Exception error)
-        {
-            // Handle any errors if necessary
-        }
-
+        public void OnCompleted() { }
+        public void OnError(Exception error) { }
         public void OnNext(GridCell value)
         {
             // When a new cell is explored, update the grid
-            // Since RenderGrid() is efficient, we can call it directly
             RenderGrid();
         }
 
-        // Render the grid using Avalonia controls
         public void RenderGrid()
         {
             MainGrid.RowDefinitions.Clear();
@@ -57,31 +45,32 @@ namespace GridMind.UI
             // Define rows and columns based on grid dimensions
             for (int row = 0; row < grid.Rows; row++)
             {
-                MainGrid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Star));
+                MainGrid.RowDefinitions.Add(new RowDefinition(CellSize, GridUnitType.Pixel));
             }
 
             for (int col = 0; col < grid.Columns; col++)
             {
-                MainGrid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Star));
+                MainGrid.ColumnDefinitions.Add(new ColumnDefinition(CellSize, GridUnitType.Pixel));
             }
 
-            // Render each cell
+            // Render each cell with uniform size
             for (int row = 0; row < grid.Rows; row++)
             {
                 for (int col = 0; col < grid.Columns; col++)
                 {
                     var cell = grid.GetCell(row, col);
 
-                    // Check if the cell has been explored
-                    bool isExplored = agent.ExploredCells.Contains(cell);
-
                     var cellBlock = new TextBlock
                     {
-                        Text = GetCellText(cell, isExplored),
-                        Background = GetCellBackground(cell, isExplored),
+                        Text = GetCellText(cell, agent.ExploredCells.Contains(cell)),
+                        Background = GetCellBackground(cell, agent.ExploredCells.Contains(cell)),
                         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                        FontSize = 20
+                        FontSize = 20,
+                        MinWidth = CellSize,
+                        MinHeight = CellSize,
+                        MaxWidth = CellSize,
+                        MaxHeight = CellSize,
                     };
 
                     // Set row and column for the cellBlock
@@ -100,28 +89,21 @@ namespace GridMind.UI
 
         private string GetCellText(GridCell cell, bool isExplored)
         {
-            if (!isExplored)
-            {
-                return ""; // Hide text for unexplored cells
-            }
+            if (!isExplored) return "";  // Hide text for unexplored cells
 
             if (cell == agent.Position) return "A";  // Agent position
-
             return cell.Type switch
             {
                 CellType.Start => "S",
                 CellType.Goal => "G",
                 CellType.Obstacle => "X",
-                _ => "." // Empty cells
+                _ => "."  // Default for empty cells
             };
         }
 
         private IBrush GetCellBackground(GridCell cell, bool isExplored)
         {
-            if (!isExplored)
-            {
-                return Brushes.DarkGray; // Color for unexplored cells (fog of war)
-            }
+            if (!isExplored) return Brushes.DarkGray;  // Color for unexplored cells (fog of war)
 
             if (cell == agent.Position) return Brushes.LightGreen;
             if (cell.Type == CellType.Start) return Brushes.LightBlue;
