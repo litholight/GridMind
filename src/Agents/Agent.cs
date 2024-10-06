@@ -102,7 +102,7 @@ namespace GridMind.Agents
             }
         }
 
-        public List<GridCell> GetVisibleCells(Grid grid, int visibilityRadius = 1)
+        public List<GridCell> GetVisibleCells(Grid grid, int visibilityRadius = 2)
         {
             var visibleCells = new List<GridCell>();
 

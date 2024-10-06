@@ -35,8 +35,8 @@ namespace GridMind
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                int gridRows = 15;
-                int gridColumns = 15;
+                int gridRows = 20;
+                int gridColumns = 20;
                 grid = new Grid(gridRows, gridColumns);
 
                 var random = new Random();
@@ -80,7 +80,7 @@ namespace GridMind
                 }
 
                 agent = new Agent("Explorer", startCell, goalCell);
-                agent.SetMovementStrategy(new RandomWalkStrategy());
+                agent.SetMovementStrategy(new ExplorerSearchStrategy());
 
                 desktop.MainWindow = new VisualizerWindow(
                     grid,
