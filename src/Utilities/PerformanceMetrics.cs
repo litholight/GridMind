@@ -9,7 +9,6 @@ namespace GridMind.Utilities
         public int StepsTaken { get; set; }
         public int CellsExplored { get; set; }
         public int RepeatedVisits { get; set; }
-        public TimeSpan TimeToGoal { get; set; }
         public bool GoalReached { get; set; }
 
         public PerformanceMetrics(string agentName)
@@ -18,7 +17,6 @@ namespace GridMind.Utilities
             StepsTaken = 0;
             CellsExplored = 0;
             RepeatedVisits = 0;
-            TimeToGoal = TimeSpan.Zero;
             GoalReached = false;
         }
 
