@@ -1,16 +1,16 @@
 // src/UI/VisualizerWindow.axaml.cs
+using System;
+using System.ComponentModel;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
-using System;
-using System.Threading.Tasks;
-using GridMind.Environment;
+using Avalonia.ReactiveUI;
 using GridMind.Agents;
+using GridMind.Environment;
 using GridMind.Navigation;
 using GridMind.Utilities;
 using ReactiveUI;
-using System.Reactive.Linq;
-using Avalonia.ReactiveUI;
-using System.ComponentModel;
 
 namespace GridMind.UI
 {
@@ -24,6 +24,7 @@ namespace GridMind.UI
         private IMovementStrategy aiStrategy;
         private HumanController humanController;
         private bool isHumanControl = false;
+        private TextBlock performanceLabel;
 
         public VisualizerWindow(Environment.Grid grid, Agent agent, Action onNextMove)
         {
@@ -53,13 +54,19 @@ namespace GridMind.UI
 
             // Initialize the GridVisualizer control with the grid and agent
             visualizerControl = new GridVisualizer(grid, agent);
-            this.FindControl<Avalonia.Controls.Grid>("MainGridContainer").Children.Add(visualizerControl);
+            this.FindControl<Avalonia.Controls.Grid>("MainGridContainer")
+                .Children.Add(visualizerControl);
 
             // Set focus to the window to receive key events
             this.Focus();
 
             // Subscribe to key down events
             this.KeyDown += OnKeyDownHandler;
+
+            performanceLabel = this.FindControl<TextBlock>("PerformanceLabel");
+
+            // Subscribe to performance changes
+            agent.PerformanceTracker.Subscribe(new PerformanceObserver(PerformanceLabel));
         }
 
         private async Task StepThroughAsync()
@@ -79,7 +86,7 @@ namespace GridMind.UI
             while (isPlaying && agent.Position != agent.Goal)
             {
                 await StepThroughAsync();
-                await Task.Delay(500);  // Adjust delay for slower/faster playback
+                await Task.Delay(500); // Adjust delay for slower/faster playback
             }
             if (agent.Position == agent.Goal)
             {
@@ -91,7 +98,7 @@ namespace GridMind.UI
         {
             if (isPlaying)
             {
-                isPlaying = false;  // Stop the playback
+                isPlaying = false; // Stop the playback
                 PlayButton.Content = "Play";
             }
             else

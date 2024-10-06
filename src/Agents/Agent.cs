@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using GridMind.Environment;
 using GridMind.Navigation;
+using GridMind.Utilities;
 
 namespace GridMind.Agents
 {
@@ -13,8 +14,9 @@ namespace GridMind.Agents
         public FogOfWar FogOfWar { get; }
         private IMovementStrategy movementStrategy;
 
-        // New property to track explored cells
+        public HashSet<GridCell> VisitedCells { get; }
         public HashSet<GridCell> ExploredCells { get; }
+        public PerformanceTracker PerformanceTracker { get; }
 
         private GridCell position;
         public GridCell Position
@@ -35,14 +37,16 @@ namespace GridMind.Agents
             Name = name;
             Position = startPosition;
             Goal = goal;
-            movementStrategy = new RandomWalkStrategy();  // Default strategy
+            movementStrategy = new RandomWalkStrategy();
 
-            // Initialize ExploredCells with the starting position
+            VisitedCells = new HashSet<GridCell> { startPosition };
             ExploredCells = new HashSet<GridCell> { startPosition };
 
-            // Initialize FogOfWar
             FogOfWar = new FogOfWar();
             FogOfWar.CellExplored(startPosition);
+
+            // Initialize PerformanceTracker
+            PerformanceTracker = new PerformanceTracker(name);
         }
 
         public void SetMovementStrategy(IMovementStrategy strategy)
@@ -52,47 +56,76 @@ namespace GridMind.Agents
 
         public void Move(Grid grid)
         {
+            // Store the previous position to track if the agent has revisited a cell
+            var previousPosition = Position;
+
+            // Move the agent based on the movement strategy
             Position = movementStrategy.NextMove(grid, this);
 
-            // Add the new position to ExploredCells
-            if (ExploredCells.Add(Position))
+            // Track whether this cell has been visited before
+            bool isPreviouslyVisited = VisitedCells.Contains(Position);
+
+            // Track steps and whether a cell is a repeated visit or a new one
+            PerformanceTracker.UpdateMetrics(metrics =>
             {
-                FogOfWar.CellExplored(Position); // Notify observers
-            }
+                metrics.IncrementSteps();
+
+                // Add the cell to visited cells and update metrics accordingly
+                if (!isPreviouslyVisited) // If the cell is newly visited
+                {
+                    VisitedCells.Add(Position); // Mark the cell as visited
+                }
+                else if (Position != previousPosition) // If it's a repeated visit and not staying in place
+                {
+                    metrics.IncrementRepeatedVisits(); // Track repeated visits correctly
+                }
+            });
 
             // Get visible cells and mark them as explored
             var visibleCells = GetVisibleCells(grid);
             foreach (var cell in visibleCells)
             {
+                // Mark the cell as explored only if it is newly discovered
                 if (ExploredCells.Add(cell))
                 {
                     FogOfWar.CellExplored(cell); // Notify observers
+                    PerformanceTracker.UpdateMetrics(metrics => metrics.IncrementCellsExplored());
                 }
             }
 
-            // Check if the agent has reached the goal
             if (Position == Goal)
             {
-                System.Console.WriteLine($"{Name} has reached the goal at ({Position.Row}, {Position.Column})!");
+                System.Console.WriteLine(
+                    $"{Name} has reached the goal at ({Position.Row}, {Position.Column})!"
+                );
+                PerformanceTracker.UpdateMetrics(metrics => metrics.GoalReached = true);
             }
         }
 
-        // Method to get visible cells
         public List<GridCell> GetVisibleCells(Grid grid, int visibilityRadius = 1)
         {
             var visibleCells = new List<GridCell>();
-            for (int row = Position.Row - visibilityRadius; row <= Position.Row + visibilityRadius; row++)
+
+            for (
+                int row = Position.Row - visibilityRadius;
+                row <= Position.Row + visibilityRadius;
+                row++
+            )
             {
-                for (int col = Position.Column - visibilityRadius; col <= Position.Column + visibilityRadius; col++)
+                for (
+                    int col = Position.Column - visibilityRadius;
+                    col <= Position.Column + visibilityRadius;
+                    col++
+                )
                 {
                     if (row >= 0 && row < grid.Rows && col >= 0 && col < grid.Columns)
                     {
                         var cell = grid.GetCell(row, col);
                         visibleCells.Add(cell);
-                        ExploredCells.Add(cell); // Mark the cell as explored
                     }
                 }
             }
+
             return visibleCells;
         }
 

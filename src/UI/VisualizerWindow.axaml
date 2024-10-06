@@ -2,25 +2,28 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="GridMind.UI.VisualizerWindow"
-        Title="GridMind Visualizer"
-        Width="800" Height="800"
-        Focusable="True">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+        Title="GridMind Visualizer" Width="800" Height="600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Controls for Step, Play, and Control Toggle -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <Button x:Name="StepButton" Content="Step"/>
+            <Button x:Name="PlayButton" Content="Play"/>
+            <Button x:Name="ControlToggleButton" Content="Switch to Human Control"/>
+        </StackPanel>
 
-		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-			<Button Name="StepButton" Content="Step" Width="100" Margin="5"/>
-			<Button Name="PlayButton" Content="Play" Width="100" Margin="5"/>
-			<Button Name="ControlToggleButton" Content="Switch to Human Control" Width="200" Margin="5"/>
-			<TextBlock Name="StatusLabel" Text="Agent Status" Margin="10"/>
-		</StackPanel>
-
-		<Grid Name="MainGridContainer" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-			<!-- GridVisualizer Control will be dynamically added here in the VisualizerWindow constructor -->
-		</Grid>
-	</Grid>
+        <!-- Grid Visualizer -->
+        <Grid x:Name="MainGridContainer" Grid.Row="1"/>
+        
+        <!-- Status and Performance Metrics -->
+        <StackPanel Orientation="Vertical" Grid.Row="2">
+            <TextBlock x:Name="StatusLabel" Text="Status: Ready"/>
+            <TextBlock x:Name="PerformanceLabel" Text="Performance: N/A"/>
+        </StackPanel>
+    </Grid>
 </Window>
