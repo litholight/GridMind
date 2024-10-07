@@ -84,7 +84,7 @@ namespace GridMind.UI
             while (isPlaying && agent.Position != agent.Goal)
             {
                 await StepThroughAsync();
-                await Task.Delay(75); // Adjust delay for slower/faster playback
+                await Task.Delay(250); // Adjust delay for slower/faster playback
             }
             if (agent.Position == agent.Goal)
             {

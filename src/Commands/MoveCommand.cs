@@ -1,8 +1,7 @@
-﻿// src/Commands/MoveCommand.cs
+﻿using System.Windows.Input;
 using GridMind.Agents;
 using GridMind.Environment;
 using GridMind.Utilities;
-using System.Windows.Input;
 
 namespace GridMind.Commands
 {
@@ -33,19 +32,21 @@ namespace GridMind.Commands
 
         private GridCell GetNextPosition()
         {
-            int newRow = agent.Position.Row + direction.RowOffset;
-            int newCol = agent.Position.Column + direction.ColOffset;
+            // Calculate new row and column using wrapping logic for toroidal movement
+            int newRow = (agent.Position.Row + direction.RowOffset + grid.Rows) % grid.Rows;
+            int newCol =
+                (agent.Position.Column + direction.ColOffset + grid.Columns) % grid.Columns;
 
-            if (newRow >= 0 && newRow < grid.Rows && newCol >= 0 && newCol < grid.Columns)
+            // Get the cell at the wrapped position
+            var nextCell = grid.GetCell(newRow, newCol);
+
+            // Return the next cell only if it is not an obstacle
+            if (nextCell.Type != CellType.Obstacle)
             {
-                var nextCell = grid.GetCell(newRow, newCol);
-                if (nextCell.Type != CellType.Obstacle)
-                {
-                    return nextCell;
-                }
+                return nextCell;
             }
 
-            // Invalid move, stay in place
+            // If the cell is an obstacle, stay in place
             return agent.Position;
         }
     }
