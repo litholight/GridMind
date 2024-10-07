@@ -22,19 +22,62 @@ namespace GridMind.Navigation
             // Get the list of valid neighbors around the agent’s current position
             var validNeighbors = MovementValidator.GetValidNeighbors(grid, agent.Position);
 
-            // Filter to only include neighbors that have not been visited yet
-            var unexploredNeighbors = validNeighbors
-                .Where(neighbor => !agent.VisitedCells.Contains(neighbor))
-                .ToList();
+            // If no valid neighbors exist, fallback to the random strategy
+            if (!validNeighbors.Any())
+                return randomWalkStrategy.NextMove(grid, agent);
 
-            if (unexploredNeighbors.Any())
+            // Calculate the score for each neighbor based on how many unexplored cells it can reveal
+            var scoredMoves = new Dictionary<GridCell, int>();
+
+            foreach (var neighbor in validNeighbors)
             {
-                // If there are unexplored neighbors, move to one of them
-                return unexploredNeighbors.First();
+                // Determine the number of newly visible cells from this neighbor position
+                int newlyVisibleCells = CountNewlyVisibleCells(grid, neighbor, agent.ExploredCells);
+                scoredMoves[neighbor] = newlyVisibleCells;
             }
 
-            // If all neighbors have been explored, switch to random walk strategy
-            return randomWalkStrategy.NextMove(grid, agent);
+            // Select the neighbor with the maximum number of newly revealed cells
+            var bestMove = scoredMoves
+                .OrderByDescending(pair => pair.Value)
+                .ThenBy(_ => System.Guid.NewGuid()) // To randomize ties
+                .FirstOrDefault()
+                .Key;
+
+            return bestMove ?? randomWalkStrategy.NextMove(grid, agent);
+        }
+
+        /// <summary>
+        /// Counts the number of newly visible cells from a given position that are not in the explored set.
+        /// </summary>
+        private int CountNewlyVisibleCells(
+            Grid grid,
+            GridCell position,
+            HashSet<GridCell> exploredCells
+        )
+        {
+            int visibilityRadius = 1; // Adjust radius if needed for the agent's field of view
+            int newCells = 0;
+
+            for (int rowOffset = -visibilityRadius; rowOffset <= visibilityRadius; rowOffset++)
+            {
+                for (int colOffset = -visibilityRadius; colOffset <= visibilityRadius; colOffset++)
+                {
+                    int wrappedRow = grid.GetWrappedRow(position.Row + rowOffset);
+                    int wrappedCol = grid.GetWrappedColumn(position.Column + colOffset);
+
+                    var neighborCell = grid.GetWrappedCell(wrappedRow, wrappedCol);
+
+                    if (
+                        !exploredCells.Contains(neighborCell)
+                        && neighborCell.Type != CellType.Obstacle
+                    )
+                    {
+                        newCells++;
+                    }
+                }
+            }
+
+            return newCells;
         }
     }
 }
