@@ -1,9 +1,11 @@
 ﻿// src/Program.cs
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using GridMind.Agents;
+using GridMind.Configuration;
 using GridMind.Environment;
 using GridMind.Navigation;
 using GridMind.UI;
@@ -23,6 +25,7 @@ namespace GridMind
 
     public class App : Application
     {
+        private GridInitializer gridInitializer;
         private Grid? grid;
         private Agent? agent;
 
@@ -35,62 +38,27 @@ namespace GridMind
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                int gridRows = 20;
-                int gridColumns = 20;
-                grid = new Grid(gridRows, gridColumns);
+                // Initialize the GridInitializer with default values
+                gridInitializer = new GridInitializer();
 
-                var random = new Random();
+                // Use GridInitializer to set up the environment
+                (grid, agent) = gridInitializer.InitializeGrid(
+                    rows: 15,
+                    columns: 15,
+                    numberOfObstacles: 30,
+                    strategy: new ExplorerSearchStrategy()
+                );
 
-                var startRow = random.Next(0, gridRows);
-                var startCol = random.Next(0, gridColumns);
-                var goalRow = random.Next(0, gridRows);
-                var goalCol = random.Next(0, gridColumns);
-
-                while (startRow == goalRow && startCol == goalCol)
-                {
-                    goalRow = random.Next(0, gridRows);
-                    goalCol = random.Next(0, gridColumns);
-                }
-
-                var startCell = grid.GetCell(startRow, startCol);
-                var goalCell = grid.GetCell(goalRow, goalCol);
-                startCell.Type = CellType.Start;
-                goalCell.Type = CellType.Goal;
-
-                // Randomly place obstacles
-                int numberOfObstacles = 30; // Adjust the number of obstacles as needed
-                for (int i = 0; i < numberOfObstacles; i++)
-                {
-                    int obstacleRow,
-                        obstacleCol;
-                    do
-                    {
-                        obstacleRow = random.Next(0, gridRows);
-                        obstacleCol = random.Next(0, gridColumns);
-                    }
-                    // Ensure obstacles don't overlap with start or goal cells
-                    while (
-                        (obstacleRow == startRow && obstacleCol == startCol)
-                        || (obstacleRow == goalRow && obstacleCol == goalCol)
-                        || grid.GetCell(obstacleRow, obstacleCol).Type == CellType.Obstacle
-                    );
-
-                    // Place obstacle
-                    grid.GetCell(obstacleRow, obstacleCol).Type = CellType.Obstacle;
-                }
-
-                agent = new Agent("Explorer", startCell, goalCell);
-                agent.SetMovementStrategy(new ExplorerSearchStrategy());
-
+                // Pass the initialized Grid and Agent to the VisualizerWindow
                 desktop.MainWindow = new VisualizerWindow(
                     grid,
                     agent,
                     () =>
                     {
-                        if (agent.Position == goalCell)
+                        if (agent.Position == agent.Goal)
                         {
                             System.Console.WriteLine(
-                                $"{agent.Name} has reached the goal at ({goalCell.Row}, {goalCell.Column})!"
+                                $"{agent.Name} has reached the goal at ({agent.Position.Row}, {agent.Position.Column})!"
                             );
                         }
                         else
@@ -102,6 +70,17 @@ namespace GridMind
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        public void ReinitializeGrid(int rows, int columns, int numberOfObstacles)
+        {
+            // Reinitialize the grid and agent with the given parameters
+            (grid, agent) = gridInitializer.InitializeGrid(
+                rows,
+                columns,
+                numberOfObstacles,
+                strategy: new ExplorerSearchStrategy()
+            );
         }
     }
 }
