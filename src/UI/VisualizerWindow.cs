@@ -1,4 +1,3 @@
-// src/UI/VisualizerWindow.axaml.cs
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -178,7 +177,8 @@ namespace GridMind.UI
 
         private void RenderGrid()
         {
-            int viewRadius = 3; // Define the radius of the viewable grid around the agent
+            int viewRadius = 6; // Define the radius of the viewable grid around the agent
+            var container = this.FindControl<Avalonia.Controls.Grid>("MainGridContainer");
 
             // Create a new grid dynamically for rendering
             var visualGrid = new Avalonia.Controls.Grid();
@@ -188,6 +188,14 @@ namespace GridMind.UI
                 visualGrid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Star));
                 visualGrid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Star));
             }
+
+            // Get the size of the MainGridContainer
+            double containerWidth = container.Bounds.Width;
+            double containerHeight = container.Bounds.Height;
+
+            // Calculate the ideal cell size
+            double cellWidth = containerWidth / (viewRadius * 2 + 1);
+            double cellHeight = containerHeight / (viewRadius * 2 + 1);
 
             // Add cells to the visual grid
             for (int row = -viewRadius; row <= viewRadius; row++)
@@ -200,11 +208,11 @@ namespace GridMind.UI
                     var cell = grid.GetWrappedCell(wrappedRow, wrappedCol);
                     var cellBlock = new TextBlock
                     {
-                        Text = GetCellText(cell),
                         Background = GetCellBackground(cell),
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                        FontSize = 20
+                        Width = cellWidth,
+                        Height = cellHeight,
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch
                     };
 
                     // Set the position in the visual grid
@@ -215,30 +223,14 @@ namespace GridMind.UI
             }
 
             // Replace the previous content of MainGridContainer with the updated grid
-            var container = this.FindControl<Avalonia.Controls.Grid>("MainGridContainer");
             container.Children.Clear();
             container.Children.Add(visualGrid);
-        }
-
-        private string GetCellText(GridCell cell)
-        {
-            if (!agent.ExploredCells.Contains(cell))
-                return "?"; // Unexplored cells show as "?"
-            if (cell == agent.Position)
-                return "A"; // Agent position
-            return cell.Type switch
-            {
-                CellType.Start => "S",
-                CellType.Goal => "G",
-                CellType.Obstacle => "X",
-                _ => "."
-            };
         }
 
         private IBrush GetCellBackground(GridCell cell)
         {
             if (!agent.ExploredCells.Contains(cell))
-                return Brushes.DarkSlateGray; // Unexplored
+                return Brushes.Gray; // Unexplored
             if (cell == agent.Position)
                 return Brushes.LightGreen;
             if (cell.Type == CellType.Start)
