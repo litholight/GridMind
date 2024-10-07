@@ -36,9 +36,20 @@ namespace GridMind.Environment
             // Ensure row and col are within the grid boundaries
             if (row < 0 || row >= Rows || col < 0 || col >= Columns)
             {
-                throw new ArgumentOutOfRangeException($"Cell ({row}, {col}) is outside the grid boundaries.");
+                throw new ArgumentOutOfRangeException(
+                    $"Cell ({row}, {col}) is outside the grid boundaries."
+                );
             }
             return cells[row, col];
+        }
+
+        public GridCell GetWrappedCell(int row, int col)
+        {
+            // Use modulo arithmetic to wrap around the grid
+            int wrappedRow = (row + Rows) % Rows;
+            int wrappedCol = (col + Columns) % Columns;
+
+            return GetCell(wrappedRow, wrappedCol);
         }
     }
 }

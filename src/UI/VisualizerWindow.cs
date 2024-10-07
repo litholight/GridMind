@@ -1,16 +1,14 @@
 // src/UI/VisualizerWindow.axaml.cs
 using System;
 using System.ComponentModel;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.ReactiveUI;
+using Avalonia.Media;
 using GridMind.Agents;
 using GridMind.Environment;
 using GridMind.Navigation;
 using GridMind.Utilities;
-using ReactiveUI;
 
 namespace GridMind.UI
 {
@@ -41,11 +39,11 @@ namespace GridMind.UI
             humanController = new HumanController(agent, grid);
 
             // Find controls defined in the XAML layout
-            visualizerControl = this.FindControl<GridVisualizer>("GridVisualizerControl");
             StepButton = this.FindControl<Button>("StepButton");
             PlayButton = this.FindControl<Button>("PlayButton");
             StatusLabel = this.FindControl<TextBlock>("StatusLabel");
             ControlToggleButton = this.FindControl<Button>("ControlToggleButton");
+            performanceLabel = this.FindControl<TextBlock>("PerformanceLabel");
 
             // Attach event handlers to the buttons
             StepButton.Click += async (_, __) => await StepThroughAsync();
@@ -63,16 +61,17 @@ namespace GridMind.UI
             // Subscribe to key down events
             this.KeyDown += OnKeyDownHandler;
 
-            performanceLabel = this.FindControl<TextBlock>("PerformanceLabel");
-
             // Subscribe to performance changes
-            agent.PerformanceTracker.Subscribe(new PerformanceObserver(PerformanceLabel));
+            agent.PerformanceTracker.Subscribe(new PerformanceObserver(performanceLabel));
+
+            // Initial rendering of the grid
+            RenderGrid();
         }
 
         private async Task StepThroughAsync()
         {
             onNextMove.Invoke();
-            visualizerControl?.UpdateAgentPosition();
+            RenderGrid();
 
             if (agent.Position == agent.Goal)
             {
@@ -124,6 +123,9 @@ namespace GridMind.UI
                 agent.SetMovementStrategy(aiStrategy);
                 StatusLabel.Text = "Control Mode: AI";
             }
+
+            // Refresh the grid to reflect fog of war change
+            RenderGrid();
         }
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
@@ -133,7 +135,7 @@ namespace GridMind.UI
                 if (e.Key == Key.Back)
                 {
                     humanController.UndoLastMove();
-                    visualizerControl?.UpdateAgentPosition();
+                    RenderGrid();
                     return;
                 }
 
@@ -170,8 +172,82 @@ namespace GridMind.UI
         {
             if (e.PropertyName == nameof(agent.Position))
             {
-                visualizerControl?.UpdateAgentPosition();
+                RenderGrid();
             }
+        }
+
+        private void RenderGrid()
+        {
+            int viewRadius = 3; // Define the radius of the viewable grid around the agent
+
+            // Create a new grid dynamically for rendering
+            var visualGrid = new Avalonia.Controls.Grid();
+
+            for (int i = 0; i < viewRadius * 2 + 1; i++)
+            {
+                visualGrid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Star));
+                visualGrid.ColumnDefinitions.Add(new ColumnDefinition(1, GridUnitType.Star));
+            }
+
+            // Add cells to the visual grid
+            for (int row = -viewRadius; row <= viewRadius; row++)
+            {
+                for (int col = -viewRadius; col <= viewRadius; col++)
+                {
+                    int wrappedRow = (agent.Position.Row + row + grid.Rows) % grid.Rows;
+                    int wrappedCol = (agent.Position.Column + col + grid.Columns) % grid.Columns;
+
+                    var cell = grid.GetWrappedCell(wrappedRow, wrappedCol);
+                    var cellBlock = new TextBlock
+                    {
+                        Text = GetCellText(cell),
+                        Background = GetCellBackground(cell),
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        FontSize = 20
+                    };
+
+                    // Set the position in the visual grid
+                    Avalonia.Controls.Grid.SetRow(cellBlock, row + viewRadius);
+                    Avalonia.Controls.Grid.SetColumn(cellBlock, col + viewRadius);
+                    visualGrid.Children.Add(cellBlock);
+                }
+            }
+
+            // Replace the previous content of MainGridContainer with the updated grid
+            var container = this.FindControl<Avalonia.Controls.Grid>("MainGridContainer");
+            container.Children.Clear();
+            container.Children.Add(visualGrid);
+        }
+
+        private string GetCellText(GridCell cell)
+        {
+            if (!agent.ExploredCells.Contains(cell))
+                return "?"; // Unexplored cells show as "?"
+            if (cell == agent.Position)
+                return "A"; // Agent position
+            return cell.Type switch
+            {
+                CellType.Start => "S",
+                CellType.Goal => "G",
+                CellType.Obstacle => "X",
+                _ => "."
+            };
+        }
+
+        private IBrush GetCellBackground(GridCell cell)
+        {
+            if (!agent.ExploredCells.Contains(cell))
+                return Brushes.DarkSlateGray; // Unexplored
+            if (cell == agent.Position)
+                return Brushes.LightGreen;
+            if (cell.Type == CellType.Start)
+                return Brushes.LightBlue;
+            if (cell.Type == CellType.Goal)
+                return Brushes.Gold;
+            if (cell.Type == CellType.Obstacle)
+                return Brushes.Gray;
+            return Brushes.White;
         }
     }
 }

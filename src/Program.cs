@@ -43,9 +43,9 @@ namespace GridMind
 
                 // Use GridInitializer to set up the environment
                 (grid, agent) = gridInitializer.InitializeGrid(
-                    rows: 15,
-                    columns: 15,
-                    numberOfObstacles: 30,
+                    rows: 10,
+                    columns: 10,
+                    numberOfObstacles: 10,
                     strategy: new ExplorerSearchStrategy()
                 );
 
