@@ -238,7 +238,7 @@ namespace GridMind.UI
             if (cell.Type == CellType.Goal)
                 return Brushes.Gold;
             if (cell.Type == CellType.Obstacle)
-                return Brushes.Gray;
+                return Brushes.Red;
             return Brushes.White;
         }
     }
