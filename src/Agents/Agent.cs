@@ -106,23 +106,17 @@ namespace GridMind.Agents
         {
             var visibleCells = new List<GridCell>();
 
-            for (
-                int row = Position.Row - visibilityRadius;
-                row <= Position.Row + visibilityRadius;
-                row++
-            )
+            for (int rowOffset = -visibilityRadius; rowOffset <= visibilityRadius; rowOffset++)
             {
-                for (
-                    int col = Position.Column - visibilityRadius;
-                    col <= Position.Column + visibilityRadius;
-                    col++
-                )
+                for (int colOffset = -visibilityRadius; colOffset <= visibilityRadius; colOffset++)
                 {
-                    if (row >= 0 && row < grid.Rows && col >= 0 && col < grid.Columns)
-                    {
-                        var cell = grid.GetCell(row, col);
-                        visibleCells.Add(cell);
-                    }
+                    // Calculate the wrapped row and column indices
+                    int wrappedRow = grid.GetWrappedRow(Position.Row + rowOffset);
+                    int wrappedCol = grid.GetWrappedColumn(Position.Column + colOffset);
+
+                    // Retrieve the wrapped cell
+                    var cell = grid.GetCell(wrappedRow, wrappedCol);
+                    visibleCells.Add(cell);
                 }
             }
 

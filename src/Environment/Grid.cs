@@ -1,5 +1,5 @@
 // src/Environment/Grid.cs
-using System;
+using System.Collections.Generic;
 
 namespace GridMind.Environment
 {
@@ -7,49 +7,47 @@ namespace GridMind.Environment
     {
         public int Rows { get; }
         public int Columns { get; }
-        private GridCell[,] cells;
+        private readonly GridCell[,] cells;
 
-        // Constructor to initialize the grid with rows and columns
         public Grid(int rows, int columns)
         {
             Rows = rows;
             Columns = columns;
             cells = new GridCell[rows, columns];
-            InitializeGrid();
+            InitializeCells();
         }
 
-        // Initializes the grid with empty cells
-        private void InitializeGrid()
+        private void InitializeCells()
         {
-            for (int i = 0; i < Rows; i++)
+            for (int row = 0; row < Rows; row++)
             {
-                for (int j = 0; j < Columns; j++)
+                for (int col = 0; col < Columns; col++)
                 {
-                    cells[i, j] = new GridCell(i, j);
+                    cells[row, col] = new GridCell(row, col);
                 }
             }
         }
 
-        // GetCell method to access specific cells in the grid
         public GridCell GetCell(int row, int col)
         {
-            // Ensure row and col are within the grid boundaries
-            if (row < 0 || row >= Rows || col < 0 || col >= Columns)
-            {
-                throw new ArgumentOutOfRangeException(
-                    $"Cell ({row}, {col}) is outside the grid boundaries."
-                );
-            }
             return cells[row, col];
         }
 
         public GridCell GetWrappedCell(int row, int col)
         {
-            // Use modulo arithmetic to wrap around the grid
-            int wrappedRow = (row + Rows) % Rows;
-            int wrappedCol = (col + Columns) % Columns;
-
+            int wrappedRow = GetWrappedRow(row);
+            int wrappedCol = GetWrappedColumn(col);
             return GetCell(wrappedRow, wrappedCol);
+        }
+
+        public int GetWrappedRow(int row)
+        {
+            return (row + Rows) % Rows; // Wrap around vertically
+        }
+
+        public int GetWrappedColumn(int col)
+        {
+            return (col + Columns) % Columns; // Wrap around horizontally
         }
     }
 }

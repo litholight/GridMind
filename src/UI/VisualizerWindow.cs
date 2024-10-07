@@ -183,6 +183,7 @@ namespace GridMind.UI
             // Create a new grid dynamically for rendering
             var visualGrid = new Avalonia.Controls.Grid();
 
+            // Define row and column structures for the visual grid
             for (int i = 0; i < viewRadius * 2 + 1; i++)
             {
                 visualGrid.RowDefinitions.Add(new RowDefinition(1, GridUnitType.Star));
@@ -197,15 +198,16 @@ namespace GridMind.UI
             double cellWidth = containerWidth / (viewRadius * 2 + 1);
             double cellHeight = containerHeight / (viewRadius * 2 + 1);
 
-            // Add cells to the visual grid
-            for (int row = -viewRadius; row <= viewRadius; row++)
+            // Render each cell within the view radius around the agent
+            for (int rowOffset = -viewRadius; rowOffset <= viewRadius; rowOffset++)
             {
-                for (int col = -viewRadius; col <= viewRadius; col++)
+                for (int colOffset = -viewRadius; colOffset <= viewRadius; colOffset++)
                 {
-                    int wrappedRow = (agent.Position.Row + row + grid.Rows) % grid.Rows;
-                    int wrappedCol = (agent.Position.Column + col + grid.Columns) % grid.Columns;
+                    int wrappedRow = grid.GetWrappedRow(agent.Position.Row + rowOffset);
+                    int wrappedCol = grid.GetWrappedColumn(agent.Position.Column + colOffset);
 
                     var cell = grid.GetWrappedCell(wrappedRow, wrappedCol);
+
                     var cellBlock = new TextBlock
                     {
                         Background = GetCellBackground(cell),
@@ -215,14 +217,14 @@ namespace GridMind.UI
                         VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch
                     };
 
-                    // Set the position in the visual grid
-                    Avalonia.Controls.Grid.SetRow(cellBlock, row + viewRadius);
-                    Avalonia.Controls.Grid.SetColumn(cellBlock, col + viewRadius);
+                    // Set the cellBlock's position in the visual grid
+                    Avalonia.Controls.Grid.SetRow(cellBlock, rowOffset + viewRadius);
+                    Avalonia.Controls.Grid.SetColumn(cellBlock, colOffset + viewRadius);
                     visualGrid.Children.Add(cellBlock);
                 }
             }
 
-            // Replace the previous content of MainGridContainer with the updated grid
+            // Replace the previous content of MainGridContainer with the updated visual grid
             container.Children.Clear();
             container.Children.Add(visualGrid);
         }
